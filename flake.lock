@@ -1,0 +1,44 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1777578337,
+        "narHash": "sha256-Ad49moKWeXtKBJNy2ebiTQUEgdLyvGmTeykAQ9xM+Z4=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "15f4ee454b1dce334612fa6843b3e05cf546efab",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "upstream": "upstream"
+      }
+    },
+    "upstream": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775555143,
+        "narHash": "sha256-NqtgI58TlwBR5EVz7+xfZu/30/O7aEgQneyuNxPViMU=",
+        "owner": "Tencent",
+        "repo": "openclaw-weixin",
+        "rev": "6e58a2bcb505df2cad8ba396b8b58b18bbcb5777",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Tencent",
+        "repo": "openclaw-weixin",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

@@ -9,3 +9,5 @@ coverage/
 openclaw/
 pnpm-lock.yaml
 pnpm-workspace.yaml
+result
+result-*
