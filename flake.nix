@@ -21,10 +21,12 @@
 
       forAllSystems = nixpkgs.lib.genAttrs systems;
 
+      pluginName = "openclaw-weixin";
+
       mkOpenClawPlugin = system:
         let
           pkgs = import nixpkgs { inherit system; };
-          packageJson = builtins.fromJSON (builtins.readFile ./package.json);
+          packageJson = builtins.fromJSON (builtins.readFile "${upstream}/package.json");
           runtimeExtraNodeModules = [
             # Used by src/media/silk-transcode.ts at runtime, but currently
             # declared upstream as a devDependency.
@@ -44,7 +46,7 @@
         (pkgs.buildNpmPackage.override {
           nodejs = pkgs.nodejs_22;
         }) {
-          pname = "openclaw-weixin";
+          pname = pluginName;
           version = packageJson.version;
 
           src = srcWithLock;
@@ -80,16 +82,38 @@
     {
       packages = forAllSystems (system: {
         default = mkOpenClawPlugin system;
-        openclawPlugin = mkOpenClawPlugin system;
       });
 
       openclawPlugin = system: {
-        name = "openclaw-weixin";
-        packages = [
-          self.packages.${system}.openclawPlugin
+        name = pluginName;
+        skills = [
+          ./skills/openclaw-weixin
         ];
-        needs = [ ];
+        packages = [
+          self.packages.${system}.default
+        ];
+        needs = {
+          stateDirs = [
+            ".openclaw"
+            ".openclaw/credentials"
+          ];
+          requiredEnv = [ ];
+        };
       };
+
+      homeManagerModules.default = { lib, pkgs, ... }:
+        let
+          pluginPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+          pluginPath = "${pluginPackage}/lib/openclaw/plugins/${pluginName}";
+        in
+        {
+          programs.openclaw.config.plugins = {
+            load.paths = [
+              pluginPath
+            ];
+            entries.${pluginName}.enabled = lib.mkDefault true;
+          };
+        };
 
       devShells = forAllSystems (system:
         let

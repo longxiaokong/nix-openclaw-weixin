@@ -25,21 +25,23 @@ jobs:
       - name: Update flake inputs
         run: nix flake update nixpkgs upstream
 
-      - name: Sync package metadata from upstream
+      - name: Regenerate npm lockfile
         run: |
           upstream_path="$(nix eval --raw --impure --expr '(builtins.getFlake (toString ./.)).inputs.upstream.outPath')"
-          cp "$upstream_path/package.json" package.json
-
-      - name: Regenerate npm lockfile
-        run: npm install --package-lock-only --ignore-scripts
+          workdir="$(mktemp -d)"
+          cp "$upstream_path/package.json" "$workdir/package.json"
+          cd "$workdir"
+          npm install --package-lock-only --ignore-scripts
+          cp package-lock.json "$GITHUB_WORKSPACE/package-lock.json"
 
       - name: Build plugin package
-        run: nix build .#openclawPlugin
+        run: nix build .#default
 
       - name: Check OpenClaw plugin output
         run: |
           test "$(nix eval --raw --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").name')" = "openclaw-weixin"
-          nix eval --json --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").needs'
+          test "$(nix eval --json --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").needs')" = '{"requiredEnv":[],"stateDirs":[".openclaw",".openclaw/credentials"]}'
+          test "$(nix eval --json --impure --expr 'builtins.attrNames (builtins.getFlake (toString ./.)).homeManagerModules')" = '["default"]'
 
       - name: Check runtime npm dependencies
         run: |
