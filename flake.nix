@@ -70,7 +70,13 @@
         openclawPlugin = mkOpenClawPlugin system;
       });
 
-      openclawPlugin = forAllSystems (system: self.packages.${system}.openclawPlugin);
+      openclawPlugin = system: {
+        name = "openclaw-weixin";
+        packages = [
+          self.packages.${system}.openclawPlugin
+        ];
+        needs = [ ];
+      };
 
       devShells = forAllSystems (system:
         let

@@ -37,7 +37,9 @@ jobs:
         run: nix build .#openclawPlugin
 
       - name: Check OpenClaw plugin output
-        run: nix eval .#openclawPlugin.x86_64-linux.pname
+        run: |
+          test "$(nix eval --raw --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").name')" = "openclaw-weixin"
+          nix eval --json --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").needs'
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v7
