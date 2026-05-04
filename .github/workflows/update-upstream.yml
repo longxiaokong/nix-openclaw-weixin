@@ -41,6 +41,26 @@ jobs:
           test "$(nix eval --raw --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").name')" = "openclaw-weixin"
           nix eval --json --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").needs'
 
+      - name: Check runtime npm dependencies
+        run: |
+          node --input-type=module <<'EOF'
+          import { createRequire } from "node:module";
+          import { readFileSync } from "node:fs";
+          import { resolve } from "node:path";
+
+          const pluginDir = resolve("result/lib/openclaw/plugins/openclaw-weixin");
+          const packageJson = JSON.parse(readFileSync(resolve(pluginDir, "package.json"), "utf8"));
+          const requireFromPlugin = createRequire(resolve(pluginDir, "dist/index.js"));
+          const modules = [
+            ...Object.keys(packageJson.dependencies ?? {}),
+            "silk-wasm",
+          ];
+
+          for (const moduleName of modules) {
+            requireFromPlugin.resolve(moduleName);
+          }
+          EOF
+
       - name: Create pull request
         uses: peter-evans/create-pull-request@v7
         with:

@@ -25,6 +25,14 @@
         let
           pkgs = import nixpkgs { inherit system; };
           packageJson = builtins.fromJSON (builtins.readFile ./package.json);
+          runtimeExtraNodeModules = [
+            # Used by src/media/silk-transcode.ts at runtime, but currently
+            # declared upstream as a devDependency.
+            "silk-wasm"
+          ];
+          runtimeNodeModules =
+            builtins.attrNames (packageJson.dependencies or { })
+            ++ runtimeExtraNodeModules;
 
           srcWithLock = pkgs.runCommandLocal "openclaw-weixin-src-${packageJson.version}" { } ''
             mkdir -p "$out"
@@ -54,6 +62,11 @@
             mkdir -p "$out/lib/openclaw/plugins/openclaw-weixin"
             cp -R dist src index.ts package.json openclaw.plugin.json README.md README.zh_CN.md CHANGELOG.md CHANGELOG.zh_CN.md LICENSE "$out/lib/openclaw/plugins/openclaw-weixin/"
             find "$out/lib/openclaw/plugins/openclaw-weixin/src" -name "*.test.ts" -delete
+            mkdir -p "$out/lib/openclaw/plugins/openclaw-weixin/node_modules"
+
+            for module in ${pkgs.lib.escapeShellArgs runtimeNodeModules}; do
+              cp -R "node_modules/$module" "$out/lib/openclaw/plugins/openclaw-weixin/node_modules/"
+            done
 
             runHook postInstall
           '';
