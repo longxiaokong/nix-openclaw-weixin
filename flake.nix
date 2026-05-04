@@ -20,9 +20,8 @@
       ];
 
       forAllSystems = nixpkgs.lib.genAttrs systems;
-    in
-    {
-      packages = forAllSystems (system:
+
+      mkOpenClawPlugin = system:
         let
           pkgs = import nixpkgs { inherit system; };
           packageJson = builtins.fromJSON (builtins.readFile ./package.json);
@@ -34,38 +33,44 @@
             cp ${./package-lock.json} "$out/package-lock.json"
           '';
         in
-        {
-          default = (pkgs.buildNpmPackage.override {
-            nodejs = pkgs.nodejs_22;
-          }) {
-            pname = "openclaw-weixin";
-            version = packageJson.version;
+        (pkgs.buildNpmPackage.override {
+          nodejs = pkgs.nodejs_22;
+        }) {
+          pname = "openclaw-weixin";
+          version = packageJson.version;
 
-            src = srcWithLock;
+          src = srcWithLock;
 
-            npmDeps = pkgs.importNpmLock {
-              npmRoot = srcWithLock;
-            };
-            npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-
-            npmBuildScript = "build";
-
-            installPhase = ''
-              runHook preInstall
-
-              mkdir -p "$out/lib/openclaw/plugins/openclaw-weixin"
-              cp -R dist src index.ts package.json openclaw.plugin.json README.md README.zh_CN.md CHANGELOG.md CHANGELOG.zh_CN.md LICENSE "$out/lib/openclaw/plugins/openclaw-weixin/"
-              find "$out/lib/openclaw/plugins/openclaw-weixin/src" -name "*.test.ts" -delete
-
-              runHook postInstall
-            '';
-
-            meta = {
-              description = packageJson.description;
-              license = pkgs.lib.licenses.mit;
-            };
+          npmDeps = pkgs.importNpmLock {
+            npmRoot = srcWithLock;
           };
-        });
+          npmConfigHook = pkgs.importNpmLock.npmConfigHook;
+
+          npmBuildScript = "build";
+
+          installPhase = ''
+            runHook preInstall
+
+            mkdir -p "$out/lib/openclaw/plugins/openclaw-weixin"
+            cp -R dist src index.ts package.json openclaw.plugin.json README.md README.zh_CN.md CHANGELOG.md CHANGELOG.zh_CN.md LICENSE "$out/lib/openclaw/plugins/openclaw-weixin/"
+            find "$out/lib/openclaw/plugins/openclaw-weixin/src" -name "*.test.ts" -delete
+
+            runHook postInstall
+          '';
+
+          meta = {
+            description = packageJson.description;
+            license = pkgs.lib.licenses.mit;
+          };
+        };
+    in
+    {
+      packages = forAllSystems (system: {
+        default = mkOpenClawPlugin system;
+        openclawPlugin = mkOpenClawPlugin system;
+      });
+
+      openclawPlugin = forAllSystems (system: self.packages.${system}.openclawPlugin);
 
       devShells = forAllSystems (system:
         let
