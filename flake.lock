@@ -2,11 +2,11 @@
   "nodes": {
     "nixpkgs": {
       "locked": {
-        "lastModified": 1778443072,
-        "narHash": "sha256-zi7/fsqM/kFdNuED//4WOCUtezGtKKqRNORjMvfwjnA=",
+        "lastModified": 1778869304,
+        "narHash": "sha256-30sZNZoA1cqF5JNO9fVX+wgiQYjB7HJqqJ4ztCDeBZE=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "da5ad661ba4e5ef59ba743f0d112cbc30e474f32",
+        "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
         "type": "github"
       },
       "original": {
@@ -25,11 +25,11 @@
     "upstream": {
       "flake": false,
       "locked": {
-        "lastModified": 1775555143,
-        "narHash": "sha256-NqtgI58TlwBR5EVz7+xfZu/30/O7aEgQneyuNxPViMU=",
+        "lastModified": 1778743390,
+        "narHash": "sha256-k3A7o6KerE+0gxpUghJMb5VHl/E7pcC4e/ZSYwLVvRE=",
         "owner": "Tencent",
         "repo": "openclaw-weixin",
-        "rev": "6e58a2bcb505df2cad8ba396b8b58b18bbcb5777",
+        "rev": "f438a160fd16368ab31f17408b84ddc6417e6be7",
         "type": "github"
       },
       "original": {
