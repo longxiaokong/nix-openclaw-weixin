@@ -64,6 +64,13 @@
             mkdir -p "$out/lib/openclaw/plugins/openclaw-weixin"
             cp -R dist src index.ts package.json openclaw.plugin.json README.md README.zh_CN.md CHANGELOG.md CHANGELOG.zh_CN.md LICENSE "$out/lib/openclaw/plugins/openclaw-weixin/"
             find "$out/lib/openclaw/plugins/openclaw-weixin/src" -name "*.test.ts" -delete
+            substituteInPlace "$out/lib/openclaw/plugins/openclaw-weixin/dist/index.js" \
+              --replace-fail 'export default {' \
+                'console.error("[nix-openclaw-weixin] dist/index.js imported");
+export default {' \
+              --replace-fail '    register(api) {' \
+                '    register(api) {
+        console.error("[nix-openclaw-weixin] register() called");'
             mkdir -p "$out/lib/openclaw/plugins/openclaw-weixin/node_modules"
 
             for module in ${pkgs.lib.escapeShellArgs runtimeNodeModules}; do
