@@ -14,11 +14,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: cachix/install-nix-action@v31
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "22"
 
@@ -43,6 +43,37 @@ jobs:
           test "$(nix eval --json --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").needs')" = '{"requiredEnv":[],"stateDirs":[".openclaw",".openclaw/credentials"]}'
           test "$(nix eval --json --impure --expr 'builtins.attrNames (builtins.getFlake (toString ./.)).homeManagerModules')" = '["default"]'
 
+      - name: Check nix-openclaw plugin contract
+        run: |
+          test "$(nix eval --json --impure --expr 'builtins.isFunction (builtins.getFlake (toString ./.)).openclawPlugin')" = "true"
+          test "$(nix eval --json --impure --expr 'builtins.length ((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").skills')" = "1"
+          test "$(nix eval --json --impure --expr 'builtins.length ((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").packages')" = "1"
+          test "$(nix eval --json --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").needs ? stateDirs')" = "true"
+          test "$(nix eval --json --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").needs ? requiredEnv')" = "true"
+
+          load_path="$(nix eval --raw --impure --expr 'let f = builtins.getFlake (toString ./.); pkgs = import f.inputs.nixpkgs { system = builtins.currentSystem; }; in builtins.elemAt (f.homeManagerModules.default { lib = pkgs.lib; inherit pkgs; }).programs.openclaw.config.plugins.load.paths 0')"
+          case "$load_path" in
+            */lib/openclaw/plugins/openclaw-weixin) ;;
+            *) echo "unexpected plugin load path: $load_path" >&2; exit 1 ;;
+          esac
+          test "$(nix eval --json --impure --expr 'let f = builtins.getFlake (toString ./.); pkgs = import f.inputs.nixpkgs { system = builtins.currentSystem; }; in (f.homeManagerModules.default { lib = pkgs.lib; inherit pkgs; }).programs.openclaw.config.plugins.entries.openclaw-weixin.enabled._type')" = '"override"'
+
+      - name: Check plugin manifest metadata
+        run: |
+          node --input-type=module <<'EOF'
+          import { readFileSync } from "node:fs";
+          import { resolve } from "node:path";
+
+          const manifestPath = resolve("result/lib/openclaw/plugins/openclaw-weixin/openclaw.plugin.json");
+          const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+          if (!manifest.channels?.includes("openclaw-weixin")) {
+            throw new Error("manifest must declare the openclaw-weixin channel");
+          }
+          if (!manifest.channelConfigs?.["openclaw-weixin"]?.schema) {
+            throw new Error("manifest must include channelConfigs.openclaw-weixin.schema");
+          }
+          EOF
+
       - name: Check runtime npm dependencies
         run: |
           node --input-type=module <<'EOF'
@@ -64,7 +95,7 @@ jobs:
           EOF
 
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: update-upstream-package
           commit-message: "Update upstream package"
