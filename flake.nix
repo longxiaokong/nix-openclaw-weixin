@@ -92,6 +92,13 @@
         packages = [
           self.packages.${system}.default
         ];
+        plugins = [
+          {
+            id = pluginName;
+            path = "${self.packages.${system}.default}/lib/openclaw/plugins/${pluginName}";
+            enabled = true;
+          }
+        ];
         needs = {
           stateDirs = [
             ".openclaw"

@@ -18,9 +18,11 @@
 
 - `packages.${system}.default`：构建好的 OpenClaw Weixin 插件包。
 - `openclawPlugin`：nix-openclaw 使用的插件契约，包含 `name`、`skills`、
-  `packages` 和 `needs`。这个输出是 `system: { ... }` 形式，适合纯 flake 求值。
-- `homeManagerModules.default`：为 nix-openclaw 追加 native plugin 的
-  `plugins.load.paths`，并默认启用 `plugins.entries.openclaw-weixin.enabled`。
+  `packages`、`plugins` 和 `needs`。这个输出是 `system: { ... }` 形式，适合纯
+  flake 求值。
+- `homeManagerModules.default`：兼容旧版 nix-openclaw 的 module，会追加 native
+  plugin 的 `plugins.load.paths`，并默认启用
+  `plugins.entries.openclaw-weixin.enabled`。
 
 `openclawPlugin.name` 是 `openclaw-weixin`，和上游 channel id 保持一致。
 
@@ -55,10 +57,11 @@ Nix 构建插件包，还需要让 OpenClaw Gateway 加载插件目录并启用
 }
 ```
 
-这个 module 会自动追加 `plugins.load.paths`，并默认启用
-`plugins.entries.openclaw-weixin.enabled`。配置是合并式的，不会清空你已有的
-`plugins.load.paths`；启用项使用 `mkDefault true`，如果你显式写 `false`，你的配置
-会优先。
+较新的 nix-openclaw 会读取本 flake 的 `openclawPlugin.plugins`，自动把 native
+plugin root 加入 `plugins.load.paths`，并启用 `plugins.entries.openclaw-weixin`。
+本仓库的 module 仍然保留，作为旧版 nix-openclaw 的兼容层；配置是合并式的，不会
+清空你已有的 `plugins.load.paths`。启用项使用 `mkDefault true`，如果你显式写
+`false`，你的配置会优先。
 
 ### 方式二：手动配置 customPlugins、load 和 enable
 

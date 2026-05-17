@@ -48,6 +48,13 @@ jobs:
           test "$(nix eval --json --impure --expr 'builtins.isFunction (builtins.getFlake (toString ./.)).openclawPlugin')" = "true"
           test "$(nix eval --json --impure --expr 'builtins.length ((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").skills')" = "1"
           test "$(nix eval --json --impure --expr 'builtins.length ((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").packages')" = "1"
+          test "$(nix eval --json --impure --expr 'builtins.length ((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").plugins')" = "1"
+          test "$(nix eval --raw --impure --expr '(builtins.elemAt ((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").plugins 0).id')" = "openclaw-weixin"
+          plugin_path="$(nix eval --raw --impure --expr '(builtins.elemAt ((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").plugins 0).path')"
+          case "$plugin_path" in
+            */lib/openclaw/plugins/openclaw-weixin) ;;
+            *) echo "unexpected openclawPlugin.plugins path: $plugin_path" >&2; exit 1 ;;
+          esac
           test "$(nix eval --json --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").needs ? stateDirs')" = "true"
           test "$(nix eval --json --impure --expr '((builtins.getFlake (toString ./.)).openclawPlugin "x86_64-linux").needs ? requiredEnv')" = "true"
 
