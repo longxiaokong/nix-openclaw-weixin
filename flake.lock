@@ -25,11 +25,11 @@
     "upstream": {
       "flake": false,
       "locked": {
-        "lastModified": 1778743390,
-        "narHash": "sha256-k3A7o6KerE+0gxpUghJMb5VHl/E7pcC4e/ZSYwLVvRE=",
+        "lastModified": 1779090513,
+        "narHash": "sha256-MXj0l0h//raJOEiV1FzGQPMzU38T+igw9Ru56lyl4Go=",
         "owner": "Tencent",
         "repo": "openclaw-weixin",
-        "rev": "f438a160fd16368ab31f17408b84ddc6417e6be7",
+        "rev": "128dc53a000f389e7da68e1080115252e5b263dd",
         "type": "github"
       },
       "original": {
